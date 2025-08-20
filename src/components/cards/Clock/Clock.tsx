@@ -8,7 +8,7 @@ export default function Clock() {
 		return () => clearInterval(t);
 	}, []);
 
-	const hh = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+	const hh = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 	const dd = now.toLocaleDateString([], { weekday: "long", day: "2-digit", month: "long" });
 
 	return (
