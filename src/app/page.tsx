@@ -1,103 +1,208 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import Image from 'next/image';
+import React, { useEffect, useState } from "react";
+import GlassCard from "@/components/GlassCard/GlassCard";
+import {WeatherState} from "@/types/weather";
+import {Profile} from "@/types/profile";
+import {GalleryItem} from "@/types/gallery";
+import uid from "@/utils/uid";
+import {Note} from "@/types/note";
+import {Skill} from "@/types/skill";
+import Clock from "@/components/cards/Clock/Clock";
+import ProfileCard from "@/components/cards/Profile/Profile";
+import Quote from "@/components/cards/Quote/Quote";
+import Weather from "@/components/cards/Weather/Weather";
+import BackgroundControls from "@/components/cards/BackgroundControls/BackgroundControls";
+import SectionTitle from "@/components/SectionTitle/SectionTitle";
+import SkillGauge from "@/components/cards/SkillGauge/SkillGauge";
+import Notes from "@/components/cards/Notes/Notes";
+import Gallery from "@/components/cards/Gallery/Gallery";
+
+interface AppState {
+  accentColor: string;
+  background?: string;
+  profile: Profile;
+  weather: WeatherState;
+  skills: Skill[];
+  notes: Note[];
+  gallery: GalleryItem[];
+}
+
+const STORAGE_KEY = "life-dashboard-state-v1";
+
+function loadState(): AppState | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as AppState) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveState(state: AppState) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {}
+}
+
+// -------------------- Main App
+
+const defaultState: AppState = {
+  accentColor: "#7c3aed",
+  profile: {
+    name: "Your Name",
+    bio: "Write something short about you",
+    email: "",
+    avatar: undefined,
+  },
+  weather: { kind: "sun", tempC: 23, description: "Clear skies" },
+  skills: [
+    { id: uid("sk"), name: "Creativity", level: 72 },
+    { id: uid("sk"), name: "Organization", level: 65 },
+    { id: uid("sk"), name: "Energy", level: 58 },
+    { id: uid("sk"), name: "Well-being", level: 80 },
+  ],
+  notes: [],
+  gallery: [],
+  background: undefined,
+};
+
+export default function LifeDashboard() {
+  const [state, setState] = useState<AppState>(() => loadState() ?? defaultState);
+
+  // Persist
+  useEffect(() => { saveState(state); }, [state]);
+
+  // Set CSS var for accent
+  useEffect(() => {
+    document.documentElement.style.setProperty("--accent", state.accentColor);
+  }, [state.accentColor]);
+
+  const setProfile = (p: Profile) => setState({ ...state, profile: p });
+  const setWeather = (w: WeatherState) => setState({ ...state, weather: w });
+  const setNotes = (n: Note[]) => setState({ ...state, notes: n });
+  const setGallery = (g: GalleryItem[]) => setState({ ...state, gallery: g });
+  const setBackground = (dataUrl?: string) => setState({ ...state, background: dataUrl });
+
+  const setSkill = (idx: number, s: Skill) => {
+    const copy = [...state.skills];
+    copy[idx] = s;
+    setState({ ...state, skills: copy });
+  };
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+      <div
+          className="relative min-h-screen text-white"
+          style={{
+            backgroundImage: state.background
+                ? `url(${state.background})`
+                : `radial-gradient(1000px_600px_at_10%_10%, #111827, transparent), radial-gradient(800px_400px_at_90%_20%, var(--accent), transparent), linear-gradient(180deg, #0b0f1a 0%, #0a0610 100%)`,
+            backgroundSize: state.background ? "cover" : "auto, auto, auto",
+            backgroundPosition: state.background ? "center" : "center",
+          }}
+      >
+        {/* Overlay d'assombrissement quand il y a un fond personnalisé */}
+        {state.background && (
+            <div
+                className="pointer-events-none absolute inset-0 bg-black/70"
+                aria-hidden
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        )}
+
+        <div className="backdrop-blur-sm relative">
+          {/* Top bar */}
+          <header className="px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 grid place-items-center">
+                <span className="text-lg" aria-hidden>🌙</span>
+              </div>
+              <div className="font-semibold tracking-tight">Life Dashboard</div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="hidden md:flex items-center gap-3 px-3 py-1 rounded-xl border border-white/10 bg-white/10">
+                {mounted && state.profile.avatar ? (
+                    <Image
+                        alt="profil pp"
+                        src={state.profile.avatar}
+                        width={24}
+                        height={24}
+                        className="rounded-full object-cover"
+                        unoptimized
+                    />
+                ) : (
+                    <div className="w-6 h-6 rounded-full bg-white/20" />
+                )}
+                <div className="text-sm text-white/80">{state.profile.name || "Anonymous"}</div>
+              </div>
+            </div>
+          </header>
+
+          {/* Content grid */}
+          <main className="px-6 pb-10">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-2 flex flex-col gap-6">
+                  <Clock />
+                  <ProfileCard
+                      profile={state.profile}
+                      setProfile={setProfile}
+                      accentColor={state.accentColor}
+                      setAccentColor={(c) => setState({ ...state, accentColor: c })}
+                  />
+                  <Quote />
+                </div>
+                <div className="flex flex-col gap-6">
+                  <Weather weather={state.weather} setWeather={setWeather} />
+                  <BackgroundControls background={state.background} setBackground={setBackground} />
+                </div>
+              </div>
+
+              {/* Right column */}
+              <div className="lg:col-span-1 flex flex-col gap-6">
+                <GlassCard className="p-5">
+                  <SectionTitle title="Skills" />
+                  <div className="grid grid-cols-2 gap-3">
+                    {state.skills.map((sk, i) => (
+                        <SkillGauge key={sk.id} skill={sk} onChange={(s) => setSkill(i, s)} />
+                    ))}
+                  </div>
+                </GlassCard>
+
+                <Notes notes={state.notes} setNotes={setNotes} />
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <Gallery items={state.gallery} setItems={setGallery} />
+            </div>
+          </main>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        {/* floating accent halo */}
+        <div className="pointer-events-none fixed inset-0" aria-hidden>
+          <div
+              className="absolute -z-10 blur-3xl opacity-30"
+              style={{
+                left: "10%",
+                top: "-10%",
+                width: 600,
+                height: 600,
+                background:
+                    "radial-gradient(50%_50%_at_50%_50%, var(--accent), transparent)",
+              }}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        </div>
+
+        <style>{`
+        :root { --accent: ${state.accentColor}; }
+        ::-webkit-scrollbar { height: 10px; width: 10px; }
+        ::-webkit-scrollbar-thumb { background: #ffffff22; border-radius: 9999px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+      `}</style>
+      </div>
   );
 }

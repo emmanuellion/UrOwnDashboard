@@ -1,0 +1,144 @@
+import React, {useRef} from "react";
+import fileToDataURL from "@/utils/fileToDataUrl";
+import {Skill} from "@/types/skill";
+
+interface SkillGaugeProps {
+	skill: Skill;
+	onChange: (s: Skill) => void;
+}
+
+async function extractAverageColor(dataUrl: string): Promise<string> {
+	return new Promise((resolve, reject) => {
+		const img = new Image();
+		img.onload = () => {
+			try {
+				const canvas = document.createElement("canvas");
+				const ctx = canvas.getContext("2d");
+				if (!ctx) return resolve("#888888");
+				const w = (canvas.width = 64);
+				const h = (canvas.height = 64);
+				// draw downscaled for speed
+				ctx.drawImage(img, 0, 0, w, h);
+				const { data } = ctx.getImageData(0, 0, w, h);
+				let r = 0, g = 0, b = 0, count = 0;
+				for (let i = 0; i < data.length; i += 4) {
+					const a = data[i + 3];
+					if (a < 128) continue; // ignore transparent
+					r += data[i];
+					g += data[i + 1];
+					b += data[i + 2];
+					count++;
+				}
+				if (!count) return resolve("#888888");
+				r = Math.round(r / count);
+				g = Math.round(g / count);
+				b = Math.round(b / count);
+				const hex = `#${[r, g, b]
+					.map((v) => v.toString(16).padStart(2, "0"))
+					.join("")}`;
+				resolve(hex);
+			} catch (e) {
+				resolve("#888888");
+			}
+		};
+		img.onerror = reject;
+		img.src = dataUrl;
+	});
+}
+
+export default function SkillGauge({ skill, onChange }: SkillGaugeProps) {
+	const fileRef = useRef<HTMLInputElement>(null);
+	const accentRef = useRef<HTMLInputElement>(null);
+	const size = 120;
+	const stroke = 10;
+	const r = (size - stroke) / 2;
+	const circ = 2 * Math.PI * r;
+	const dash = (skill.level / 100) * circ;
+
+	const gradientId = `grad_${skill.id}`;
+
+	const onIcon = async (file: File) => {
+		const data = await fileToDataURL(file);
+		onChange({ ...skill, icon: data });
+	};
+
+	const onAccentImage = async (file: File) => {
+		const data = await fileToDataURL(file);
+		const color = await extractAverageColor(data);
+		onChange({ ...skill, accentImage: data, accentColor: color });
+	};
+
+	return (
+		<div className="flex flex-col items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+			<div className="relative" style={{ width: size, height: size }}>
+				<svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+					<defs>
+						<linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+							<stop offset="0%" stopColor={skill.accentColor || "var(--accent)"} />
+							<stop offset="100%" stopColor={"#ffffff80"} />
+						</linearGradient>
+					</defs>
+					<circle cx={size / 2} cy={size / 2} r={r} stroke="#ffffff22" strokeWidth={stroke} fill="none" />
+					<circle
+						cx={size / 2}
+						cy={size / 2}
+						r={r}
+						stroke={`url(#${gradientId})`}
+						strokeLinecap="round"
+						strokeWidth={stroke}
+						fill="none"
+						strokeDasharray={`${dash} ${circ - dash}`}
+						transform={`rotate(-90 ${size / 2} ${size / 2})`}
+					/>
+				</svg>
+				<button
+					className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full overflow-hidden ring-2 ring-white/40"
+					onClick={() => fileRef.current?.click()}
+				>
+					{skill.icon ? (
+						<img src={skill.icon} alt="skill" className="w-full h-full object-cover" />
+					) : (
+						<div className="w-full h-full grid place-items-center text-xs text-white/70 bg-white/10">icon</div>
+					)}
+				</button>
+			</div>
+			<div className="text-white/90 text-sm font-medium">{skill.name}</div>
+			<input
+				type="range"
+				min={0}
+				max={100}
+				value={skill.level}
+				onChange={(e) => onChange({ ...skill, level: Number(e.target.value) })}
+				className="w-full accent-[var(--accent)]"
+			/>
+			<div className="flex gap-2 text-xs">
+				<button
+					onClick={() => accentRef.current?.click()}
+					className="px-2 py-1 rounded-md bg-black/30 border border-white/10 text-white/80 hover:bg-black/40"
+				>
+					Accent from image
+				</button>
+				{skill.accentColor && (
+					<span className="inline-flex items-center gap-1 text-white/70">
+            <span className="w-3 h-3 rounded-full border border-white/30" style={{ background: skill.accentColor }} />
+						{skill.accentColor}
+          </span>
+				)}
+			</div>
+			<input
+				ref={fileRef}
+				type="file"
+				accept="image/*"
+				className="hidden"
+				onChange={(e) => e.target.files && onIcon(e.target.files[0])}
+			/>
+			<input
+				ref={accentRef}
+				type="file"
+				accept="image/*"
+				className="hidden"
+				onChange={async (e) => e.target.files && onAccentImage(e.target.files[0])}
+			/>
+		</div>
+	);
+};
