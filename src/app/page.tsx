@@ -28,6 +28,7 @@ import { Skill } from '@/types/skill';
 import uid from '@/utils/uid';
 import QuickLaunchDock from "@/components/cards/QuickLaunchDock/QuickLaunchDock";
 import WeatherNextHours from "@/components/cards/WeatherNextHours/WeatherNextHours";
+import BackupCard from "@/components/cards/Backup/Backup";
 
 interface AppState {
   accentColor: string;
@@ -268,8 +269,9 @@ export default function LifeDashboard() {
               </div>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-6 md:col-span-2 flex flex-col gap-6">
               <Gallery items={state.gallery} setItems={setGallery} />
+              <BackupCard state={state} setState={setState} />
             </div>
           </main>
         </div>
