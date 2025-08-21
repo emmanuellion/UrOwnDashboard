@@ -31,7 +31,7 @@ export default function Notes({ notes, setNotes }: NotesProps) {
 				/>
 				<button
 					onClick={add}
-					className="px-4 py-2 rounded-lg bg-[var(--accent)] text-white shadow hover:opacity-90"
+					className="hover:cursor-pointer px-4 py-2 rounded-lg bg-[var(--accent)] text-white shadow hover:opacity-90"
 				>
 					Add
 				</button>

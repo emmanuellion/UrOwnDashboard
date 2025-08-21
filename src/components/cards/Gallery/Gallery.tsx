@@ -61,7 +61,7 @@ export default function Gallery({ items, setItems }: GalleryProps) {
 				right={
 					<button
 						onClick={() => inputRef.current?.click()}
-						className="px-3 py-1 rounded-md bg-[var(--accent)] text-white text-sm"
+						className="hover:cursor-pointer px-3 py-1 rounded-md bg-[var(--accent)] text-white text-sm"
 					>
 						Upload
 					</button>

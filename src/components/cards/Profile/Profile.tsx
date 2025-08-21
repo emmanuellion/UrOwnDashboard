@@ -30,7 +30,7 @@ export default function ProfileCard({ profile, setProfile, accentColor, setAccen
 					{profile.avatar ? (
 						<Image src={profile.avatar} alt="avatar" fill className="w-full h-full object-cover" />
 					) : (
-						<div className="w-full h-full grid place-items-center bg-white/10 text-white/70">Add</div>
+						<div className="hover:cursor-pointer w-full h-full grid place-items-center bg-white/10 text-white/70">Add</div>
 					)}
 				</button>
 				<div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -57,7 +57,7 @@ export default function ProfileCard({ profile, setProfile, accentColor, setAccen
 					<label className="text-xs text-white/70">Accent</label>
 					<input
 						type="color"
-						className="block w-10 h-10 rounded-md border border-white/20 bg-transparent"
+						className="hover:cursor-pointer block w-10 h-10 rounded-md border border-white/20 bg-transparent"
 						value={accentColor}
 						onChange={(e) => setAccentColor(e.target.value)}
 					/>

@@ -26,6 +26,8 @@ import { GalleryItem } from '@/types/gallery';
 import { Note } from '@/types/note';
 import { Skill } from '@/types/skill';
 import uid from '@/utils/uid';
+import QuickLaunchDock from "@/components/cards/QuickLaunchDock/QuickLaunchDock";
+import WeatherNextHours from "@/components/cards/WeatherNextHours/WeatherNextHours";
 
 interface AppState {
   accentColor: string;
@@ -93,11 +95,6 @@ export default function LifeDashboard() {
   const setNotes = (n: Note[]) => setState({ ...state, notes: n });
   const setGallery = (g: GalleryItem[]) => setState({ ...state, gallery: g });
   const setBackground = (dataUrl?: string) => setState({ ...state, background: dataUrl });
-  const setSkill = (idx: number, s: Skill) => {
-    const copy = [...state.skills];
-    copy[idx] = s;
-    setState({ ...state, skills: copy });
-  };
 
   // gérer Next/Image côté client
   const [mounted, setMounted] = useState(false);
@@ -198,10 +195,11 @@ export default function LifeDashboard() {
                 </div>
                 <div className="flex flex-col gap-6">
                   <Weather weather={state.weather} setWeather={setWeather} />
+                  <WeatherNextHours />
                   <BackgroundControls
-                      background={state.background}
                       setBackground={setBackground}
                   />
+                  <QuickLaunchDock />
                 </div>
               </div>
 
@@ -221,7 +219,7 @@ export default function LifeDashboard() {
                               // focus sur le nom de la gauge ajoutée
                               setEditingSkillId(id);
                             }}
-                            className="px-3 py-1 rounded-md bg-[var(--accent)] text-white text-sm"
+                            className="hover:cursor-pointer px-3 py-1 rounded-md bg-[var(--accent)] text-white text-sm"
                         >
                           + Add
                         </button>

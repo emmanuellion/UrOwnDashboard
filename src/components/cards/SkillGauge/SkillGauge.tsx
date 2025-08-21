@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import fileToDataURL from "@/utils/fileToDataUrl";
 import {Skill} from "@/types/skill";
 
@@ -42,6 +42,7 @@ export default function SkillGauge({ skill, onChange, onRemove, autoFocusName }:
 	const fileRef = useRef<HTMLInputElement>(null);
 	const accentRef = useRef<HTMLInputElement>(null);
 	const nameRef = useRef<HTMLInputElement>(null);
+	const [cursorType, setCursorType] = useState<string>('none');
 
 	useEffect(() => { if (autoFocusName) nameRef.current?.focus(); }, [autoFocusName]);
 
@@ -101,7 +102,7 @@ export default function SkillGauge({ skill, onChange, onRemove, autoFocusName }:
 					/>
 				</svg>
 				<button
-					className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full overflow-hidden ring-2 ring-white/40"
+					className="hover:cursor-pointer absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full overflow-hidden ring-2 ring-white/40"
 					onClick={() => fileRef.current?.click()}
 				>
 					{skill.icon ? (
@@ -127,6 +128,13 @@ export default function SkillGauge({ skill, onChange, onRemove, autoFocusName }:
 				min={0}
 				max={100}
 				value={skill.level}
+				style={{
+					cursor: cursorType
+				}}
+				onMouseEnter={() => setCursorType("grab")}
+				onMouseDown={() => setCursorType("grabbing")}
+				onMouseUp={() => setCursorType("grab")}
+				onMouseLeave={() => setCursorType("none")}
 				onChange={(e) => onChange({ ...skill, level: Number(e.target.value) })}
 				className="w-full accent-[var(--accent)]"
 			/>
@@ -134,7 +142,7 @@ export default function SkillGauge({ skill, onChange, onRemove, autoFocusName }:
 			<div className="flex gap-2 text-xs">
 				<button
 					onClick={() => accentRef.current?.click()}
-					className="px-2 py-1 rounded-md bg-black/30 border border-white/10 text-white/80 hover:bg-black/40"
+					className="hover:cursor-pointer px-2 py-1 rounded-md bg-black/30 border border-white/10 text-white/80 hover:bg-black/40"
 				>
 					Accent from image
 				</button>

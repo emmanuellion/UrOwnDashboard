@@ -187,7 +187,7 @@ export default function Weather({ weather, setWeather }: WeatherProps) {
 			<div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-2xl p-5 shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
 				<div className="flex items-center justify-between mb-3">
 					<h3 className="text-base font-semibold tracking-tight text-white/90">Weather</h3>
-					<button onClick={init} className="px-3 py-1 rounded-md bg-[var(--accent)] text-white text-sm">
+					<button onClick={init} className="hover:cursor-pointer px-3 py-1 rounded-md bg-[var(--accent)] text-white text-sm">
 						Réessayer
 					</button>
 				</div>
@@ -210,7 +210,7 @@ export default function Weather({ weather, setWeather }: WeatherProps) {
 					<button
 						onClick={init}
 						disabled={loading}
-						className="px-3 py-1 rounded-md bg-[var(--accent)] text-white text-sm disabled:opacity-60"
+						className="hover:cursor-pointer px-3 py-1 rounded-md bg-[var(--accent)] text-white text-sm disabled:opacity-60"
 					>
 						{loading ? '…' : 'Actualiser'}
 					</button>
