@@ -99,7 +99,8 @@ export default function QuickLaunchDock() {
                 {!adding ? (
                     <button
                         onClick={() => setAdding(true)}
-                        className="hover:cursor-pointer px-3 py-1 rounded-md bg-[var(--accent)] text-white text-sm"
+                        style={{ background: 'var(--accent)', color: 'var(--on-accent)', borderColor: 'color-mix(in oklab, var(--on-accent) 25%, transparent)' }}
+                        className="hover:cursor-pointer px-3 py-1 rounded-md text-sm"
                     >
                         + Add
                     </button>
@@ -113,13 +114,20 @@ export default function QuickLaunchDock() {
                             onKeyDown={(e) => (e.key === 'Enter' ? add() : e.key === 'Escape' ? setAdding(false) : null)}
                             className="bg-black/20 text-white/90 rounded-md px-3 py-1 w-64"
                         />
-                        <button onClick={add} className="hover:cursor-pointer px-3 py-1 rounded-md bg-[var(--accent)] text-white text-sm">Add</button>
+                        <button
+                            onClick={add}
+                            style={{
+                                background: 'var(--accent)',
+                                color: 'var(--on-accent)',
+                                borderColor: 'color-mix(in oklab, var(--on-accent) 25%, transparent)'
+                            }}
+                            className="hover:cursor-pointer px-3 py-1 rounded-md text-sm">Add</button>
                         <button onClick={() => { setAdding(false); setUrlInput(''); }} className="hover:cursor-pointer px-3 py-1 rounded-md bg-white/10 text-white text-sm">Cancel</button>
                     </div>
                 )}
             </div>
 
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {items.map((it) => {
                     const url = normalizeUrl(it.url);
                     const candidates = [

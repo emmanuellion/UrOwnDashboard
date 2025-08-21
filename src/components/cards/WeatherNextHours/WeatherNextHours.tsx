@@ -80,7 +80,8 @@ export default function WeatherNextHours() {
             <div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-2xl p-5">
                 <div className="flex items-center justify-between mb-3">
                     <h3 className="text-base font-semibold tracking-tight text-white/90">Next hours</h3>
-                    <button onClick={load} className="hover:cursor-pointer px-3 py-1 rounded-md bg-[var(--accent)] text-white text-sm">Retry</button>
+                    <button style={{ background: 'var(--accent)', color: 'var(--on-accent)', borderColor: 'color-mix(in oklab, var(--on-accent) 25%, transparent)' }}
+                            onClick={load} className="hover:cursor-pointer px-3 py-1 rounded-md text-sm">Retry</button>
                 </div>
                 <div className="text-white/60 text-sm">Prévision indisponible.</div>
             </div>
@@ -91,7 +92,8 @@ export default function WeatherNextHours() {
         <div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-2xl p-5">
             <div className="flex items-center justify-between mb-3">
                 <h3 className="text-base font-semibold tracking-tight text-white/90">Next hours</h3>
-                <button onClick={load} disabled={loading} className="hover:cursor-pointer px-3 py-1 rounded-md bg-[var(--accent)] text-white text-sm disabled:opacity-60">
+                <button style={{ background: 'var(--accent)', color: 'var(--on-accent)', borderColor: 'color-mix(in oklab, var(--on-accent) 25%, transparent)' }}
+                        onClick={load} disabled={loading} className="hover:cursor-pointer px-3 py-1 rounded-md text-sm disabled:opacity-60">
                     {loading ? '…' : 'Actualiser'}
                 </button>
             </div>

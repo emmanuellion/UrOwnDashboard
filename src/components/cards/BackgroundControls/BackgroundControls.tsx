@@ -19,7 +19,8 @@ export default function BackgroundControls({ setBackground }: BackgroundControlP
 			<SectionTitle title="Background" right={
 				<div className="flex gap-2">
 					<button onClick={() => setBackground(undefined)} className="hover:cursor-pointer px-3 py-1 rounded-md bg-black/30 border border-white/10 text-white/80">Reset</button>
-					<button onClick={() => inputRef.current?.click()} className="hover:cursor-pointer px-3 py-1 rounded-md bg-[var(--accent)] text-white">Change</button>
+					<button style={{ background: 'var(--accent)', color: 'var(--on-accent)', borderColor: 'color-mix(in oklab, var(--on-accent) 25%, transparent)' }}
+							onClick={() => inputRef.current?.click()} className="hover:cursor-pointer px-3 py-1 rounded-md">Change</button>
 				</div>
 			} />
 			<div className="text-white/70 text-sm">Pick a custom background image. Glassmorphism stays consistent.</div>

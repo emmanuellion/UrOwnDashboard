@@ -29,6 +29,13 @@ import uid from '@/utils/uid';
 import QuickLaunchDock from "@/components/cards/QuickLaunchDock/QuickLaunchDock";
 import WeatherNextHours from "@/components/cards/WeatherNextHours/WeatherNextHours";
 import BackupCard from "@/components/cards/Backup/Backup";
+import WorldClock from "@/components/cards/WorldClock/WorldClock";
+import FocusTimer from "@/components/cards/FocusTimer/FocusTimer";
+import SystemStatus from "@/components/cards/SystemStatus/SytemStatus";
+import ExifViewer from "@/components/cards/EXIFViewer/EXIFViewer";
+import AppsMenu, { AppDef } from '@/components/header/AppsMenu';
+import SunArc from "@/components/cards/SunArc/SunArc";
+import {onAccentColor} from "@/utils/color";
 
 interface AppState {
   accentColor: string;
@@ -41,6 +48,62 @@ interface AppState {
 }
 
 const STORAGE_KEY = 'life-dashboard-state-v1';
+const VIS_KEY = 'life-dashboard-visible-v1';
+
+const APP_REGISTRY: AppDef[] = [
+  { id: 'clock', label: 'Clock', group: 'Core' },
+  { id: 'profile', label: 'Profile', group: 'Core' },
+  { id: 'quote', label: 'Quote', group: 'Core' },
+  { id: 'weather', label: 'Weather', group: 'Weather' },
+  { id: 'weatherHours', label: 'Weather — Next Hours', group: 'Weather' },
+  { id: 'background', label: 'Background Controls', group: 'System' },
+  { id: 'quick', label: 'Quick Launch', group: 'Tools' },
+  { id: 'skills', label: 'Skills', group: 'Personal' },
+  { id: 'notes', label: 'Quick Notes', group: 'Personal' },
+  { id: 'gallery', label: 'Gallery', group: 'Media' },
+  { id: 'backup', label: 'Backup', group: 'System' },
+
+  // extras
+  { id: 'sunarc', label: 'Sun Arc', group: 'Weather' },
+  { id: 'focus', label: 'Focus Timer', group: 'Tools' },
+  { id: 'worldclock', label: 'World Clock', group: 'Time' },
+  { id: 'exif', label: 'EXIF Viewer', group: 'Media' },
+  { id: 'system', label: 'System Status', group: 'System' }
+];
+
+const DEFAULT_VISIBLE: Record<string, boolean> = {
+  clock: true,
+  profile: true,
+  quote: true,
+  weather: true,
+  weatherHours: true,
+  background: true,
+  quick: true,
+  skills: true,
+  notes: true,
+  gallery: true,
+  backup: true,
+  // extras (par défaut off pour ne pas saturer)
+  sunarc: false,
+  focus: false,
+  worldclock: false,
+  exif: false,
+  system: false,
+};
+
+function loadVisibility(): Record<string, boolean> {
+  try {
+    const raw = localStorage.getItem(VIS_KEY);
+    if (raw) return { ...DEFAULT_VISIBLE, ...JSON.parse(raw) };
+  } catch {}
+  return { ...DEFAULT_VISIBLE };
+}
+
+function saveVisibility(v: Record<string, boolean>) {
+  try {
+    localStorage.setItem(VIS_KEY, JSON.stringify(v));
+  } catch {}
+}
 
 function loadState(): AppState | null {
   try {
@@ -79,6 +142,7 @@ const defaultState: AppState = {
 
 export default function LifeDashboard() {
   const [state, setState] = useState<AppState>(() => loadState() ?? defaultState);
+  const [visible, setVisible] = useState<Record<string, boolean>>(() => (typeof window === 'undefined' ? DEFAULT_VISIBLE : loadVisibility()));
 
   // persistance
   useEffect(() => {
@@ -87,7 +151,9 @@ export default function LifeDashboard() {
 
   // couleur d'accent globale
   useEffect(() => {
-    document.documentElement.style.setProperty('--accent', state.accentColor);
+    const root = document.documentElement;
+    root.style.setProperty('--accent', state.accentColor);
+    root.style.setProperty('--on-accent', onAccentColor(state.accentColor));
   }, [state.accentColor]);
 
   // setters
@@ -132,6 +198,8 @@ export default function LifeDashboard() {
     // on déclenche quand le nombre de skills change
   }, [state.skills.length]);
 
+  const resetVisibility = () => setVisible({ ...DEFAULT_VISIBLE });
+
   return (
       <div
           className="relative min-h-screen text-white"
@@ -160,6 +228,7 @@ export default function LifeDashboard() {
               <div className="font-semibold tracking-tight">Life Dashboard</div>
             </div>
             <div className="flex items-center gap-3">
+              <AppsMenu registry={APP_REGISTRY} visible={visible} onChange={setVisible} onReset={resetVisibility} />
               <div className="hidden md:flex items-center gap-3 px-3 py-1 rounded-xl border border-white/10 bg-white/10">
                 {mounted && state.profile.avatar ? (
                     <Image
@@ -185,28 +254,31 @@ export default function LifeDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-2 flex flex-col gap-6">
-                  <Clock />
-                  <ProfileCard
-                      profile={state.profile}
-                      setProfile={setProfile}
-                      accentColor={state.accentColor}
-                      setAccentColor={(c) => setState({ ...state, accentColor: c })}
-                  />
-                  <Quote />
+                  {visible.clock && <Clock />}
+                  {visible.worldclock && <WorldClock />}
+                  {visible.profile && (
+                      <ProfileCard
+                          profile={state.profile}
+                          setProfile={setProfile}
+                          accentColor={state.accentColor}
+                          setAccentColor={(c) => setState({ ...state, accentColor: c })}
+                      />
+                  )}
+                  {visible.sunarc && <SunArc />}
+                  {visible.focus && <FocusTimer />}
                 </div>
                 <div className="flex flex-col gap-6">
-                  <Weather weather={state.weather} setWeather={setWeather} />
-                  <WeatherNextHours />
-                  <BackgroundControls
-                      setBackground={setBackground}
-                  />
-                  <QuickLaunchDock />
+                  {visible.weather && <Weather weather={state.weather} setWeather={setWeather} />}
+                  {visible.weatherHours && <WeatherNextHours />}
+                  {visible.system && <SystemStatus />}
+                  {visible.background && <BackgroundControls setBackground={setBackground} />}
+                  {visible.quick && <QuickLaunchDock />}
                 </div>
               </div>
 
               {/* Right column */}
               <div className="lg:col-span-1 flex flex-col gap-6">
-                <GlassCard className="p-5">
+                {visible.skills && (<GlassCard className="p-5">
                   <SectionTitle
                       title="Skills"
                       right={
@@ -220,7 +292,8 @@ export default function LifeDashboard() {
                               // focus sur le nom de la gauge ajoutée
                               setEditingSkillId(id);
                             }}
-                            className="hover:cursor-pointer px-3 py-1 rounded-md bg-[var(--accent)] text-white text-sm"
+                            style={{ background: 'var(--accent)', color: 'var(--on-accent)', borderColor: 'color-mix(in oklab, var(--on-accent) 25%, transparent)' }}
+                            className="hover:cursor-pointer px-3 py-1 rounded-md text-sm"
                         >
                           + Add
                         </button>
@@ -263,15 +336,16 @@ export default function LifeDashboard() {
                       })}
                     </div>
                   </div>
-                </GlassCard>
-
-                <Notes notes={state.notes} setNotes={setNotes} />
+                </GlassCard>)}
+                {visible.notes && <Notes notes={state.notes} setNotes={setNotes} />}
+                {visible.quote && <Quote />}
               </div>
             </div>
 
             <div className="mt-6 md:col-span-2 flex flex-col gap-6">
-              <Gallery items={state.gallery} setItems={setGallery} />
-              <BackupCard state={state} setState={setState} />
+              {visible.gallery && <Gallery items={state.gallery} setItems={setGallery} />}
+              {visible.exif && <ExifViewer gallery={state.gallery} />}
+              {visible.backup && <BackupCard state={state} setState={setState} />}
             </div>
           </main>
         </div>

@@ -61,7 +61,8 @@ export default function Gallery({ items, setItems }: GalleryProps) {
 				right={
 					<button
 						onClick={() => inputRef.current?.click()}
-						className="hover:cursor-pointer px-3 py-1 rounded-md bg-[var(--accent)] text-white text-sm"
+						style={{ background: 'var(--accent)', color: 'var(--on-accent)', borderColor: 'color-mix(in oklab, var(--on-accent) 25%, transparent)' }}
+						className="hover:cursor-pointer px-3 py-1 rounded-md text-sm"
 					>
 						Upload
 					</button>

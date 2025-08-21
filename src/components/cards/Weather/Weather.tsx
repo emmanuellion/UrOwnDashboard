@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import {copy} from "@/utils/copy";
 
 type WeatherKind = 'sun' | 'cloud' | 'rain' | 'storm' | 'snow';
 export interface WeatherState {
@@ -187,7 +188,8 @@ export default function Weather({ weather, setWeather }: WeatherProps) {
 			<div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-2xl p-5 shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
 				<div className="flex items-center justify-between mb-3">
 					<h3 className="text-base font-semibold tracking-tight text-white/90">Weather</h3>
-					<button onClick={init} className="hover:cursor-pointer px-3 py-1 rounded-md bg-[var(--accent)] text-white text-sm">
+					<button style={{ background: 'var(--accent)', color: 'var(--on-accent)', borderColor: 'color-mix(in oklab, var(--on-accent) 25%, transparent)' }}
+							onClick={init} className="hover:cursor-pointer px-3 py-1 rounded-md text-sm">
 						Réessayer
 					</button>
 				</div>
@@ -203,14 +205,15 @@ export default function Weather({ weather, setWeather }: WeatherProps) {
 
 				<div className="flex items-center gap-2">
 					{/* Pastille localisation */}
-					<div className="px-2 py-1 rounded-full border border-white/15 bg-white/10 text-white/80 text-xs flex items-center gap-1">
+					<div onClick={() => copy(label ?? "")} className="hover:cursor-copy px-2 py-1 rounded-full border border-white/15 bg-white/10 text-white/80 text-xs flex items-center gap-1">
 						<span aria-hidden>📍</span>
 						<span className="truncate max-w-[240px]">{label ?? '—'}</span>
 					</div>
 					<button
 						onClick={init}
 						disabled={loading}
-						className="hover:cursor-pointer px-3 py-1 rounded-md bg-[var(--accent)] text-white text-sm disabled:opacity-60"
+						style={{ background: 'var(--accent)', color: 'var(--on-accent)', borderColor: 'color-mix(in oklab, var(--on-accent) 25%, transparent)' }}
+						className="hover:cursor-pointer px-3 py-1 rounded-md text-sm disabled:opacity-60"
 					>
 						{loading ? '…' : 'Actualiser'}
 					</button>
