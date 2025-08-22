@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import {copy} from "@/utils/copy";
+import { copy } from '@/utils/copy';
 
 type WeatherKind = 'sun' | 'cloud' | 'rain' | 'storm' | 'snow';
 export interface WeatherState {
@@ -14,7 +14,7 @@ interface WeatherProps {
 	setWeather: (w: WeatherState) => void;
 }
 
-/** Capitales de fallback (complète si besoin) */
+/** Capitales de fallback */
 const CAPITALS: Record<string, { lat: number; lon: number; label: string }> = {
 	FR: { lat: 48.8566, lon: 2.3522, label: 'Paris, FR' },
 	BE: { lat: 50.8503, lon: 4.3517, label: 'Bruxelles, BE' },
@@ -94,27 +94,40 @@ async function reverseGeocode(lat: number, lon: number, lang = 'fr') {
 }
 
 function fallbackCountryCode(): string | undefined {
-	// essaye d'extraire la partie pays (fr-FR → FR)
 	const loc =
 		(typeof navigator !== 'undefined' && (navigator.language || '')) ||
-		(Intl.DateTimeFormat().resolvedOptions().locale ?? '');
+		Intl.DateTimeFormat().resolvedOptions().locale ||
+		'';
 	const maybe = loc.split('-')[1]?.toUpperCase();
 	return maybe && maybe.length === 2 ? maybe : undefined;
 }
 
+function useMounted() {
+	const [m, setM] = useState(false);
+	useEffect(() => setM(true), []);
+	return m;
+}
+
 export default function Weather({ weather, setWeather }: WeatherProps) {
+	const mounted = useMounted();
 	const [label, setLabel] = useState<string | undefined>();
 	const [loading, setLoading] = useState(false);
 	const [available, setAvailable] = useState(true);
 
 	const icon = useMemo(() => {
 		switch (weather.kind) {
-			case 'sun': return '☀️';
-			case 'cloud': return '☁️';
-			case 'rain': return '🌧️';
-			case 'storm': return '⛈️';
-			case 'snow': return '❄️';
-			default: return '⛅';
+			case 'sun':
+				return '☀️';
+			case 'cloud':
+				return '☁️';
+			case 'rain':
+				return '🌧️';
+			case 'storm':
+				return '⛈️';
+			case 'snow':
+				return '❄️';
+			default:
+				return '⛅';
 		}
 	}, [weather.kind]);
 
@@ -122,7 +135,7 @@ export default function Weather({ weather, setWeather }: WeatherProps) {
 		if (typeof window === 'undefined') return;
 		setLoading(true);
 		try {
-			// 1) Essayer la géoloc
+			// 1) Géoloc
 			const getPosition = () =>
 				new Promise<GeolocationPosition>((resolve, reject) =>
 					navigator.geolocation.getCurrentPosition(resolve, reject, {
@@ -141,15 +154,12 @@ export default function Weather({ weather, setWeather }: WeatherProps) {
 				lat = pos.coords.latitude;
 				lon = pos.coords.longitude;
 
-				// reverse geocode avec fallback coords même si fetch() jette
 				try {
 					place = await reverseGeocode(lat, lon);
 				} catch {
 					place = `${lat.toFixed(3)}, ${lon.toFixed(3)}`;
 				}
-				if (!place) {
-					place = `${lat.toFixed(3)}, ${lon.toFixed(3)}`;
-				}
+				if (!place) place = `${lat.toFixed(3)}, ${lon.toFixed(3)}`;
 			} catch {
 				// 2) Fallback capitale
 				const cc = fallbackCountryCode();
@@ -169,7 +179,7 @@ export default function Weather({ weather, setWeather }: WeatherProps) {
 
 			const { tempC, kind, text } = await fetchWeather(lat, lon);
 			setWeather({ ...weather, tempC, kind, description: text });
-			setLabel(place); // place est forcément défini si géoloc OK, sinon capitales ; sinon on aurait quitté plus haut
+			setLabel(place);
 			setAvailable(true);
 		} catch {
 			setAvailable(false);
@@ -180,16 +190,25 @@ export default function Weather({ weather, setWeather }: WeatherProps) {
 
 	useEffect(() => {
 		init();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [mounted]);
 
 	if (!available) {
 		return (
 			<div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-2xl p-5 shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
 				<div className="flex items-center justify-between mb-3">
-					<h3 className="text-base font-semibold tracking-tight text-white/90">Weather</h3>
-					<button style={{ background: 'var(--accent)', color: 'var(--on-accent)', borderColor: 'color-mix(in oklab, var(--on-accent) 25%, transparent)' }}
-							onClick={init} className="hover:cursor-pointer px-3 py-1 rounded-md text-sm">
+					<h3 className="text-base font-semibold tracking-tight text-white/90">
+						Weather
+					</h3>
+					<button
+						style={{
+							background: 'var(--accent)',
+							color: 'var(--on-accent)',
+							borderColor:
+								'color-mix(in oklab, var(--on-accent) 25%, transparent)',
+						}}
+						onClick={init}
+						className="hover:cursor-pointer px-3 py-1 rounded-md text-sm"
+					>
 						Réessayer
 					</button>
 				</div>
@@ -201,18 +220,30 @@ export default function Weather({ weather, setWeather }: WeatherProps) {
 	return (
 		<div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-2xl p-5 shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
 			<div className="flex items-center justify-between mb-3">
-				<h3 className="text-base font-semibold tracking-tight text-white/90">Weather</h3>
+				<h3 className="text-base font-semibold tracking-tight text-white/90">
+					Weather
+				</h3>
 
 				<div className="flex items-center gap-2">
-					{/* Pastille localisation */}
-					<div onClick={() => copy(label ?? "")} className="hover:cursor-copy px-2 py-1 rounded-full border border-white/15 bg-white/10 text-white/80 text-xs flex items-center gap-1">
+					{/* Lieu (copiable) */}
+					<div
+						onClick={() => copy(label ?? '')}
+						className="hover:cursor-copy px-2 py-1 rounded-full border border-white/15 bg-white/10 text-white/80 text-xs flex items-center gap-1"
+					>
 						<span aria-hidden>📍</span>
-						<span className="truncate max-w-[240px]">{label ?? '—'}</span>
+						<span className="truncate max-w-[240px]" suppressHydrationWarning>
+              {mounted ? label ?? '—' : ''}
+            </span>
 					</div>
 					<button
 						onClick={init}
 						disabled={loading}
-						style={{ background: 'var(--accent)', color: 'var(--on-accent)', borderColor: 'color-mix(in oklab, var(--on-accent) 25%, transparent)' }}
+						style={{
+							background: 'var(--accent)',
+							color: 'var(--on-accent)',
+							borderColor:
+								'color-mix(in oklab, var(--on-accent) 25%, transparent)',
+						}}
 						className="hover:cursor-pointer px-3 py-1 rounded-md text-sm disabled:opacity-60"
 					>
 						{loading ? '…' : 'Actualiser'}
@@ -221,13 +252,23 @@ export default function Weather({ weather, setWeather }: WeatherProps) {
 			</div>
 
 			<div className="flex items-center gap-4">
-				<div className="text-4xl" aria-hidden>{icon}</div>
+				{/* Icône / valeur rendues après montage */}
+				<div className="text-4xl" aria-hidden suppressHydrationWarning>
+					{mounted ? icon : ''}
+				</div>
 				<div>
-					<div className="text-xl font-semibold text-white">
-						{Number.isFinite(weather.tempC) ? `${weather.tempC}°C` : '—'}
+					<div
+						className="text-xl font-semibold text-white"
+						suppressHydrationWarning
+					>
+						{mounted && Number.isFinite(weather.tempC) ? `${weather.tempC}°C` : '—'}
 					</div>
-					<div className="text-white/70 text-sm">
-						{label ? `${label} • ${weather.description}` : weather.description || '—'}
+					<div className="text-white/70 text-sm" suppressHydrationWarning>
+						{mounted
+							? label
+								? `${label} • ${weather.description}`
+								: weather.description || '—'
+							: ''}
 					</div>
 					<div className="text-[10px] text-white/40 mt-1">Source : Open-Meteo</div>
 				</div>

@@ -1,22 +1,43 @@
-import {useEffect, useState} from "react";
-import GlassCard from "@/components/GlassCard/GlassCard";
+'use client';
+import React, { useEffect, useMemo, useState } from 'react';
 
 export default function Clock() {
-	const [now, setNow] = useState(new Date());
+	// null au départ => SSR et 1er rendu client identiques
+	const [now, setNow] = useState<Date | null>(null);
+
 	useEffect(() => {
+		setNow(new Date()); // hydrate après montage
 		const t = setInterval(() => setNow(new Date()), 1000);
 		return () => clearInterval(t);
 	}, []);
 
-	const hh = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-	const dd = now.toLocaleDateString([], { weekday: "long", day: "2-digit", month: "long" });
+	const time = useMemo(() => {
+		if (!now) return '—:—:—';
+		return new Intl.DateTimeFormat(undefined, {
+			hour: '2-digit',
+			minute: '2-digit',
+			second: '2-digit',
+			hourCycle: 'h23', // évite 12h/24h aléatoire
+		}).format(now);
+	}, [now]);
+
+	const date = useMemo(() => {
+		if (!now) return '';
+		return new Intl.DateTimeFormat(undefined, {
+			weekday: 'long',
+			day: '2-digit',
+			month: 'long',
+		}).format(now);
+	}, [now]);
 
 	return (
-		<GlassCard className="p-5">
-			<div className="flex items-end gap-3">
-				<div className="text-5xl font-semibold leading-none text-white" style={{textShadow: "0 10px 30px rgba(0,0,0,0.35)"}}>{hh}</div>
+		<div className="p-5">
+			<div suppressHydrationWarning className="text-5xl font-semibold leading-none">
+				{time}
 			</div>
-			<div className="mt-2 text-white/70 text-sm capitalize">{dd}</div>
-		</GlassCard>
+			<div suppressHydrationWarning className="mt-2 text-white/70 text-sm capitalize">
+				{date}
+			</div>
+		</div>
 	);
-};
+}

@@ -14,9 +14,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={'antialiased'}>
-        {children}
-      </body>
+        <head>
+            <link rel="preconnect" href="https://open-meteo.com"/>
+            <link rel="preconnect" href="https://api.open-meteo.com"/>
+        </head>
+        <body className={'antialiased'}>
+            {children}
+        </body>
     </html>
   );
 }

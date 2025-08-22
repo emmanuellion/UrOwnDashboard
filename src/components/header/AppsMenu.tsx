@@ -55,7 +55,7 @@ export default function AppsMenu({ registry, visible, onChange, onReset }: Props
             <button
                 ref={btnRef}
                 onClick={() => setOpen((o) => !o)}
-                className="px-3 py-1 rounded-md bg-white/10 text-white text-sm border border-white/15 hover:bg-white/15"
+                className="hover:cursor-pointer px-3 py-1 rounded-md bg-white/10 text-white text-sm border border-white/15 hover:bg-white/15"
             >
                 Apps
             </button>
