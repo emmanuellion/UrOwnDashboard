@@ -31,7 +31,7 @@ export default function Clock() {
 	}, [now]);
 
 	return (
-		<div className="p-5">
+		<div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-2xl p-5 shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
 			<div suppressHydrationWarning className="text-5xl font-semibold leading-none">
 				{time}
 			</div>
